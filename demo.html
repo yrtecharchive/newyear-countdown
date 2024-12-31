@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #1a1a1a, #000000);
+            color: white;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .forest {
+            width: 100%;
+            height: 40vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #1a1a1a;
+        }
+
+        .trees {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .countdown-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid #8b5cf6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
+
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .time-segment {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .time-segment:hover {
+            transform: scale(1.05);
+        }
+
+        .time {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .label {
+            font-size: 1rem;
+            color: #d1d1d1;
+        }
+
+        .message {
+            font-size: 1.2rem;
+            color: #d1d1d1;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .sparkle {
+            display: inline-block;
+            animation: sparkle 1.5s infinite;
+            margin: 0 10px;
+        }
+
+        @keyframes sparkle {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .time {
+                font-size: 2rem;
+            }
+            
+            .label {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="forest">
+        <svg class="trees" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMax slice">
+            <!-- Background Trees -->
+            <path d="M0,400 L1000,400 L1000,200 C900,180 850,150 800,200 C750,250 700,180 650,220 C600,260 550,200 500,240 C450,280 400,220 350,260 C300,300 250,240 200,280 C150,320 100,260 50,300 L0,320 Z" fill="#2a2a2a"/>
+            <!-- Middle Trees -->
+            <path d="M0,400 L1000,400 L1000,250 C900,230 850,200 800,250 C750,300 700,230 650,270 C600,310 550,250 500,290 C450,330 400,270 350,310 C300,350 250,290 200,330 C150,370 100,310 50,350 L0,370 Z" fill="#3a3a3a"/>
+            <!-- Front Trees -->
+            <path d="M0,400 L1000,400 L1000,300 C900,280 850,250 800,300 C750,350 700,280 650,320 C600,360 550,300 500,340 C450,380 400,320 350,360 C300,400 250,340 200,380 C150,420 100,360 50,400 L0,420 Z" fill="#4a4a4a"/>
+        </svg>
+    </div>
+
+    <div class="countdown-container">
+        <div class="container">
+            <h1><span class="sparkle">✨</span>New Year 2025<span class="sparkle">✨</span></h1>
+            <div class="countdown">
+                <div class="time-segment">
+                    <div class="time" id="days">00</div>
+                    <div class="label">Days</div>
+                </div>
+                <div class="time-segment">
+                    <div class="time" id="hours">00</div>
+                    <div class="label">Hours</div>
+                </div>
+                <div class="time-segment">
+                    <div class="time" id="minutes">00</div>
+                    <div class="label">Minutes</div>
+                </div>
+                <div class="time-segment">
+                    <div class="time" id="seconds">00</div>
+                    <div class="label">Seconds</div>
+                </div>
+            </div>
+            <div class="message">Counting down to midnight!</div>
+        </div>
+    </div>
+
+    <script>
+        function updateCountdown() {
+            const newYear = new Date('January 1, 2025 00:00:00').getTime();
+            const now = new Date().getTime();
+            const gap = newYear - now;
+
+            const second = 1000;
+            const minute = second * 60;
+            const hour = minute * 60;
+            const day = hour * 24;
+
+            const d = Math.floor(gap / day);
+            const h = Math.floor((gap % day) / hour);
+            const m = Math.floor((gap % hour) / minute);
+            const s = Math.floor((gap % minute) / second);
+
+            document.getElementById('days').innerText = String(d).padStart(2, '0');
+            document.getElementById('hours').innerText = String(h).padStart(2, '0');
+            document.getElementById('minutes').innerText = String(m).padStart(2, '0');
+            document.getElementById('seconds').innerText = String(s).padStart(2, '0');
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>

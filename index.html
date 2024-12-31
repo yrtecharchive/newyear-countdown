@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #1a1a1a, #000000);
+            color: white;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .forest {
+            width: 100%;
+            height: 40vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #1a1a1a;
+        }
+
+        .trees {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+            display: none;
+        }
+
+        .countdown-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid #8b5cf6;
+            z-index: 2;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
+
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .time-segment {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .time-segment:hover {
+            transform: scale(1.05);
+        }
+
+        .time {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .label {
+            font-size: 1rem;
+            color: #d1d1d1;
+        }
+
+        .message {
+            font-size: 1.2rem;
+            color: #d1d1d1;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .sparkle {
+            display: inline-block;
+            animation: sparkle 1.5s infinite;
+            margin: 0 10px;
+        }
+
+        @keyframes sparkle {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .time {
+                font-size: 2rem;
+            }
+            
+            .label {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireworks"></canvas>
+    
+    <div class="forest">
+        <svg class="trees" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMax slice">
+            <path d="M0,400 L1000,400 L1000,200 C900,180 850,150 800,200 C750,250 700,180 650,220 C600,260 550,200 500,240 C450,280 400,220 350,260 C300,300 250,240 200,280 C150,320 100,260 50,300 L0,320 Z" fill="#2a2a2a"/>
+            <path d="M0,400 L1000,400 L1000,250 C900,230 850,200 800,250 C750,300 700,230 650,270 C600,310 550,250 500,290 C450,330 400,270 350,310 C300,350 250,290 200,330 C150,370 100,310 50,350 L0,370 Z" fill="#3a3a3a"/>
+            <path d="M0,400 L1000,400 L1000,300 C900,280 850,250 800,300 C750,350 700,280 650,320 C600,360 550,300 500,340 C450,380 400,320 350,360 C300,400 250,340 200,380 C150,420 100,360 50,400 L0,420 Z" fill="#4a4a4a"/>
+        </svg>
+    </div>
+
+    <div class="countdown-container">
+        <div class="container">
+            <h1><span class="sparkle">✨</span>New Year 2025<span class="sparkle">✨</span></h1>
+            <div class="countdown">
+                <div class="time-segment">
+                    <div class="time" id="days">00</div>
+                    <div class="label">Days</div>
+                </div>
+                <div class="time-segment">
+                    <div class="time" id="hours">00</div>
+                    <div class="label">Hours</div>
+                </div>
+                <div class="time-segment">
+                    <div class="time" id="minutes">00</div>
+                    <div class="label">Minutes</div>
+                </div>
+                <div class="time-segment">
+                    <div class="time" id="seconds">00</div>
+                    <div class="label">Seconds</div>
+                </div>
+            </div>
+            <div class="message">Counting down to midnight!</div>
+        </div>
+    </div>
+
+    <script>
+        // Fireworks code
+        const canvas = document.getElementById('fireworks');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Trail class
+        class Trail {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.alpha = 0.5;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 1, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.alpha -= 0.02;
+            }
+        }
+
+        // Particle class
+        class Particle {
+            constructor(x, y, color, angle, speed) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.angle = angle;
+                this.speed = speed;
+                this.radius = speed * 10;
+                this.alpha = 1;
+                this.decay = 0.02;
+                this.gravity = 0.1;
+                this.velocityY = 0;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.x = this.x + Math.cos(this.angle) * this.speed;
+                this.y = this.y + Math.sin(this.angle) * this.speed;
+                this.velocityY += this.gravity;
+                this.y += this.velocityY;
+                this.speed *= 0.97;
+                this.alpha -= this.decay;
+            }
+        }
+
+        // Firework class
+        class Firework {
+            constructor(x, y, targetX, targetY, color) {
+                this.x = x;
+                this.y = y;
+                this.startX = x;
+                this.startY = y;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.color = color;
+                this.trails = [];
+                
+                const dx = targetX - x;
+                const dy = targetY - y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                this.velocity = {
+                    x: (dx / distance) * (8 + Math.random() * 4),
+                    y: (dy / distance) * (8 + Math.random() * 4) - 8
+                };
+                
+                this.particles = [];
+                this.exploded = false;
+                this.rings = 3;
+                this.gravity = 0.3;
+                
+                this.wobble = {
+                    x: 0,
+                    frequency: Math.random() * 0.1,
+                    amplitude: Math.random() * 0.4
+                };
+            }
+
+            draw() {
+                if (!this.exploded) {
+                    this.trails.forEach(trail => trail.draw());
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                this.particles.forEach(particle => particle.draw());
+            }
+
+            update() {
+                if (!this.exploded) {
+                    this.trails.push(new Trail(this.x, this.y, this.color));
+                    this.velocity.y += this.gravity;
+                    this.wobble.x += this.wobble.frequency;
+                    
+                    this.x += this.velocity.x + Math.sin(this.wobble.x) * this.wobble.amplitude;
+                    this.y += this.velocity.y;
+                    
+                    this.trails = this.trails.filter(trail => trail.alpha > 0);
+                    this.trails.forEach(trail => trail.update());
+
+                    const distanceToTarget = Math.hypot(this.targetX - this.x, this.targetY - this.y);
+                    if (distanceToTarget < 20 || this.velocity.y > 0) {
+                        this.explode();
+                    }
+                }
+
+                this.particles.forEach((particle, index) => {
+                    particle.update();
+                    if (particle.alpha <= 0) {
+                        this.particles.splice(index, 1);
+                    }
+                });
+            }
+
+            explode() {
+                this.exploded = true;
+                
+                for (let ring = 0; ring < this.rings; ring++) {
+                    const particlesInRing = 30 + (ring * 10);
+                    const speed = 3 + (ring * 2);
+                    
+                    for (let i = 0; i < particlesInRing; i++) {
+                        const angle = (i / particlesInRing) * Math.PI * 2;
+                        this.particles.push(new Particle(
+                            this.x,
+                            this.y,
+                            this.color,
+                            angle,
+                            speed
+                        ));
+                    }
+                }
+
+                for (let i = 0; i < 30; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1 + Math.random() * 3;
+                    this.particles.push(new Particle(
+                        this.x,
+                        this.y,
+                        this.color,
+                        angle,
+                        speed
+                    ));
+                }
+            }
+        }
+
+        const fireworks = [];
+        const colors = ['#ff0000', '#ffa500', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#ee82ee'];
+        let isFireworksActive = false;
+
+        function addFirework() {
+            const startX = Math.random() * canvas.width;
+            const startY = canvas.height;
+            const targetX = startX + (Math.random() - 0.5) * 200;
+            const targetY = canvas.height * (0.2 + Math.random() * 0.4);
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            fireworks.push(new Firework(startX, startY, targetX, targetY, color));
+        }
+
+        function animate() {
+            if (!isFireworksActive) return;
+            
+            requestAnimationFrame(animate);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.05) {
+                addFirework();
+            }
+
+            fireworks.forEach((firework, index) => {
+                firework.draw();
+                firework.update();
+                
+                if (firework.exploded && firework.particles.length === 0) {
+                    fireworks.splice(index, 1);
+                }
+            });
+        }
+
+        canvas.addEventListener('click', (e) => {
+            if (!isFireworksActive) return;
+            const startX = e.clientX + (Math.random() - 0.5) * 50;
+            const startY = canvas.height;
+            const targetX = e.clientX;
+            const targetY = e.clientY;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            fireworks.push(new Firework(startX, startY, targetX, targetY, color));
+        });
+
+        // Countdown code
+        function updateCountdown() {
+            const newYear = new Date('January 1, 2025 00:00:00').getTime();
+            const now = new Date().getTime();
+            const gap = newYear - now;
+
+            if (gap <= 0) {
+                document.querySelector('.countdown-container').style.display = 'none';
+                document.getElementById('fireworks').style.display = 'block';
+                if (!isFireworksActive) {
+                    isFireworksActive = true;
+                    animate();
+                }
+                return;
+            }
+
+            const second = 1000;
+            const minute = second * 60;
+            const hour = minute * 60;
+            const day = hour * 24;
+
+            const d = Math.floor(gap / day);
+            const h = Math.floor((gap % day) / hour);
+            const m = Math.floor((gap % hour) / minute);
+            const s = Math.floor((gap % minute) / second);
+
+            document.getElementById('days').innerText = String(d).padStart(2, '0');
+            document.getElementById('hours').innerText = String(h).padStart(2, '0');
+            document.getElementById('minutes').innerText = String(m).padStart(2, '0');
+            document.getElementById('seconds').innerText = String(s).padStart(2, '0');
+        }
+
+        // Check if it's already 2025
+        const now = new Date();
+        if (now >= new Date('January 1, 2025 00:00:00')) {
+            document.querySelector('.countdown-container').style.display = 'none';
+            document.getElementById('fireworks').style.display = 'block';
+            isFireworksActive = true;
+            animate();
+        } else {
+            setInterval(updateCountdown, 1000);
+            updateCountdown();
+        }
+    </script>
+</body>
+</html>
